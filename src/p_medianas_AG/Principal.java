@@ -5,6 +5,8 @@
  */
 package p_medianas_AG;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import javax.swing.JFrame;
 
@@ -17,12 +19,12 @@ public class Principal {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        int largura=800, 
+    public static void main(String[] args) throws IOException {
+        int     largura=800, 
                 altura=600, 
-                tot_pontos_demanda=1000, 
-                tot_facilidades=50, 
-                tot_facilidades_a_usar=3;
+                tot_pontos_demanda=10, 
+                tot_facilidades=10, 
+                tot_facilidades_a_usar=2;
         
         Pontos p = new Pontos(tot_pontos_demanda,tot_facilidades,largura, altura,tot_facilidades_a_usar);
         JFrame application = new JFrame("Todas as conexões");
@@ -45,4 +47,10 @@ public class Principal {
         Alg_Genetico.setSize(altura,largura);
         Alg_Genetico.setVisible(true);
     }
+    
+    public static void escritor(String path, String texto) throws IOException {
+          BufferedWriter buffWrite = new BufferedWriter(new FileWriter(path, true));
+          buffWrite.append(texto);
+          buffWrite.close();
+      }   
 }
