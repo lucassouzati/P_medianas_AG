@@ -21,6 +21,7 @@ public class AlgoritmoGenetico {
     private int tot_facilidades, tot_pontos_demanda, qtde_facilidades_usar, tamanho_populacao, pior_fitness, sem_melhoria;
     private int[][] populacao;
     private int[] vlr_fitness;
+    private int iteracao = 0;
     private String nome_arq_texto;
 
     private long tempo_gasto;
@@ -44,14 +45,14 @@ public class AlgoritmoGenetico {
         //para marcar o tempo
         long inicio = System.currentTimeMillis();
         long tempo_gasto;
-        int iteracao = 0;
+        
         populacao_inicial();//Cria a população Inicial
         this.sem_melhoria = 0;
         int soma_fitness = 0;
         int[] pais = new int[2];
         int[] filho = new int[this.qtde_facilidades_usar];
 
-        while (this.sem_melhoria < 200) {
+        while (this.sem_melhoria < 50000) {
             soma_fitness = fitness();
             pais = roleta(soma_fitness);
             filho = cruzamento(pais);
@@ -101,7 +102,7 @@ public class AlgoritmoGenetico {
         }
     }
 
-    private int fitness() {
+    private int fitness() throws IOException {
         Calculos c = new Calculos(this.custos, this.tot_facilidades, this.tot_pontos_demanda);
         int[] aux = new int[this.qtde_facilidades_usar];
         for (int i = 0; i < this.tamanho_populacao; i++) {
@@ -122,6 +123,8 @@ public class AlgoritmoGenetico {
                 this.pior_fitness = vlr_fitness[i];
             }
         }
+        
+        
 
         //Invertendo as coisas
         for (int i = 0; i < this.tamanho_populacao; i++) {
@@ -187,7 +190,7 @@ public class AlgoritmoGenetico {
         return filho;
     }
 
-    private void atualiza_populacao(int[] filho) {
+    private void atualiza_populacao(int[] filho) throws IOException {
         int menor = this.vlr_fitness[0], indice = 0;//O pior é o menor fitness, pois já foi invertido na funcao fitness
 
         for (int i = 1; i < this.tamanho_populacao; i++) {
@@ -200,13 +203,28 @@ public class AlgoritmoGenetico {
         Calculos c2 = new Calculos(this.custos, this.tot_facilidades, this.tot_pontos_demanda);
         c2.setSolucao_testada(filho);
         int fitness_filho = this.pior_fitness - (int) Math.round(c2.calculaCustos());
-
-        if (fitness_filho < 0) {
+        //double fitness_filho = c2.calculaCustos();
+        
+        if (fitness_filho > 0) {
+        //if(fitness_filho > this.pior_fitness){
             //Copiando o filho para o lugar do pior indivíduo
+            
+            this.mais_proximo = selecionaMais_proximo();
+            Calculos c3 = new Calculos(this.custos, this.tot_facilidades, this.tot_pontos_demanda);
+            c3.setSolucao_testada(this.mais_proximo);
+            c3.preenche_mais_proximo();
+            this.melhor_custo = c3.calculaCustos();
+            double custo_filho = c2.calculaCustos();
+            String resultado = this.tot_pontos_demanda + ", " + this.tot_facilidades + ", " + this.qtde_facilidades_usar + ", " + custo_filho + ", " + iteracao + ", " + this.sem_melhoria + ", "+ this.melhor_custo  + "\n";
+            escritor("/home/lsiqueira/IFF Sistemas/Inteligência Computacional/P2/P_medianas_AG/relatorios/piores_filhos.txt", resultado);
+            
             System.arraycopy(filho, 0, this.populacao[indice], 0, this.qtde_facilidades_usar);
+            
         } else {
             this.sem_melhoria += 1;
         }
+        
+        
     }
 
     public int[] selecionaMais_proximo() {
